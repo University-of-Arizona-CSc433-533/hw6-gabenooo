@@ -116,12 +116,15 @@ function handleFile() {
 //     return scaledData;
 // }
 
-
+// data is picture data hdr
+//gamma is val for gamma correction
+//filter size for convolution 
+//height / width are picture height width
 function applyToneMappingWithBilateral(data, gamma, filterSize, width, height) {
     const scaledData = [];
     
     const pixelCount = data.length / 4;
-    // compute l(L)
+    // compute l(L) log luminance for each pixel
     const logLuminance = [];
     for (let i = 0; i < pixelCount; i++) {
         const offset = i * 4;
@@ -175,14 +178,14 @@ function conv(data, width, height, filterSize) {
             const neighborY = y + j;
             if (neighborX >= 0 && neighborX < width && neighborY >= 0 && neighborY < height) {
               const neighborIndex = neighborY * width + neighborX;
-              const distanceSq = i * i + j * j;
+              const distanceSq = i * i + j * j; //Euclidean distance
               // modify your convolution to produce a non-linear operator instead of a standard box filter.
-              const weight = Math.exp(-distanceSq / (2 * 0.5 ** 2));
-              const intensityDiff = Math.abs(data[index] - data[neighborIndex]);
-              const intensityWeight = Math.exp(-intensityDiff / (2 * 0.1 ** 2));
+              const weight = Math.exp(-distanceSq / (2 * 0.5 ** 2)); // Gaussian function - yeilds dec weight with increasing distance from the cur
+              const intensityDiff = Math.abs(data[index] - data[neighborIndex]); // intensity difference
+              const intensityWeight = Math.exp(-intensityDiff / (2 * 0.1 ** 2)); // Gaussian function func to decrease intensity difference with inc from cyr
               const totalWeight = weight * intensityWeight;
-              sum += data[neighborIndex] * totalWeight;
-              weightSum += totalWeight;
+              sum += data[neighborIndex] * totalWeight; // add to sum - weighted acording to distance
+              weightSum += totalWeight; // prevent changes in brighntess with this
             }
           }
         } 
